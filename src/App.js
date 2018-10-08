@@ -1,28 +1,65 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import { connect } from 'react-redux';
+import { createStructuredSelector } from 'reselect'
+import { Router, Redirect } from 'react-router-dom';
+import createBrowserHistory from 'history/createBrowserHistory';
+import { Jumbotron, Container, Row } from 'reactstrap';
+
+
+import { PrivateRoute } from './utils';
+
+// actions
+import { getUserProfile, logOut } from './actions';
+// selectors
+import { selectLoggedInUser } from './selectors';
+
+// components
+import { Header } from './components';
+// containers
+import { Authorization, EmployeeList } from './containers'
 import './App.css';
 
+const history = createBrowserHistory();
+
+const AuthorizationScreen = () => <Authorization />;
+const EmployeeListScreen = () => <EmployeeList />;
+
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+
+	componentDidMount() {
+		this.props.getUserProfile();
+	}
+
+	render() {
+		const { loggedInUser, logOut } = this.props;
+		return (
+			<Router history={history}>
+				<Container>
+					{ loggedInUser && <Header username={loggedInUser.username} logOut={logOut} /> }
+					<Redirect from="/" exact to="/login" />
+					<PrivateRoute
+						exact
+						path="/login"
+						approved={!loggedInUser}
+						component={AuthorizationScreen}
+						redirectTo="/employee-list/1" />
+					<PrivateRoute
+						path="/employee-list/:page"
+						approved={!!loggedInUser}
+						component={EmployeeListScreen}
+						redirectTo="/login" />
+				</Container>
+			</Router>
+		)
+	}
 }
 
-export default App;
+const mapStateToProps = (state) => createStructuredSelector({
+	loggedInUser: selectLoggedInUser()
+});
+const mapDispatchToProps = dispatch => ({
+	getUserProfile: () => dispatch(getUserProfile()),
+	logOut: () => dispatch(logOut())
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(App);

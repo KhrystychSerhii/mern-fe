@@ -1,0 +1,9 @@
+.employee-list-container {
+
+}
+.component-header {
+    width: 100%;
+    display: flex;
+    margin-bottom: 10px;
+    justify-content: space-between;
+}

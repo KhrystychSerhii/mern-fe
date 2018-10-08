@@ -1,0 +1,8 @@
+.pagination-wrapper {
+    position: absolute;
+    justify-content: center;
+    width: 100%;
+    left: 0;
+    bottom: 0;
+    display: flex;
+}
